@@ -1,13 +1,14 @@
-import json
+import os
+import shutil
+import time
+from urllib.parse import unquote
+
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
-from django.http import JsonResponse
+
 from .forms import InputForm
 from .services import parse_chat
-import os
-
-
-from urllib.parse import unquote
 
 
 class ParseChatView(View):
@@ -35,8 +36,13 @@ class WriteChangesView(View):
         parsed_data = parse_chat(content, app_name, root_folder)
 
         for file_path, file_content in parsed_data.items():
+            file_path = file_path.replace("\\", os.sep).replace("/", os.sep)
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            with open(file_path, "w") as file:
+
+            if os.path.exists(file_path):
+                shutil.move(file_path, file_path + f"_{int(time.time())}.bak")
+
+            with open(file_path, "w", encoding="utf-8") as file:
                 file.write(file_content)
 
         return JsonResponse({"status": "Changes written successfully"})
