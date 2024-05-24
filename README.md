@@ -11,6 +11,8 @@ Tested with:
 
 Licensed under GNU AFFERO GENERAL PUBLIC LICENSE Version 3.
 
+![UI](ui.png)
+
 ## Installation
 
 Clone main repository:

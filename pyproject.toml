@@ -6,9 +6,8 @@ build-backend = "hatchling.build"
 name = "mrw"
 dynamic = ["version"]
 description = ''
-readme = "README.rst"
+readme = "README.md"
 requires-python = ">=3.12"
-license = "AGPL v3"
 keywords = []
 authors = [
   { name = "Thomas Weholt", email = "thomas@weholt.org" },
@@ -18,6 +17,7 @@ classifiers = [
     "Framework :: Django",
     "Framework :: Django :: 5.0",
     "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
     "Operating System :: OS Independent",
     "Development Status :: 4 - Beta",
     "Programming Language :: Python",
