@@ -1,0 +1,324 @@
+{% load crispy_forms_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>mrw</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .container-fluid {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+        }
+        .left-panel {
+            width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .editor-card {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .editor {
+            flex: 1;
+            border: 1px solid #dee2e6;
+            border-radius: .25rem;
+        }
+        .result-container {
+            flex: 1;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            gap: 10px;
+        }
+        .card {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: .25rem;
+            margin: 5px;
+            position: relative;
+            break-inside: avoid;
+        }
+        .editor-title {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            padding: 10px;
+            font-weight: bold;
+        }
+        .navbar {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .code-block {
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            padding: 10px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .highlight {
+            padding: 10px;
+        }
+        .card-header {
+            font-size: 0.9rem;
+        }
+        .copy-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+        .buttons-container {
+            display: flex;
+            gap: 10px;
+        }
+        .buttons-container i {
+            cursor: pointer;
+        }
+        .instructions-container {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: .25rem;
+            border: 1px solid #dee2e6;
+            position: relative;
+            margin-top: 10px;
+        }
+        .instructions-copy-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+        .console-text {
+            background-color: #d1d1d1;
+            color: #5c5c5c;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-family: Consolas, 'Courier New', monospace;
+            font-size: small;
+        }
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: black;
+            margin-left: 1rem;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-light bg-light">
+    <div class="d-flex align-items-center">
+        <a class="navbar-brand" href="#">mrw</a>
+        <div class="buttons-container">
+            <span id="parseChatBtn" class="me-4"><i class="fas fa-code mx-2"></i> Parse Chat </span>
+            <span id="writeChangesBtn"><i class="fas fa-save mx-2"></i> Write changes to disk</span>
+        </div>
+    </div>
+</nav>
+<div class="container-fluid">
+    <div class="left-panel">
+        <div class="form-info-container">
+            <div class="card form-card">
+                <div class="card-header">Project Details</div>
+                <div class="card-body">
+                    <form id="inputForm" method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                    </form>
+                    <div class="instructions-container">
+                        <h6>GPT instructions</h6>
+                        <p class="console-text">
+                            1) <b>Prefix all code examples with</b><br># filename: intended file<br><b>and</b><br># endof<br><b>after the code example</b><br>
+                            2) <b>Print all code in one section, not as individual sections/files</b><br>
+                        </p>
+                        <i class="fas fa-copy instructions-copy-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card editor-card">
+            <div class="editor-title">HTML Editor</div>
+            <div id="editor_html" class="editor"></div>
+        </div>
+    </div>
+    <div id="result-container" class="result-container"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var editor_html = ace.edit("editor_html");
+        editor_html.setTheme("ace/theme/github");
+        editor_html.session.setMode("ace/mode/html");
+        editor_html.setValue(
+`Some random text
+# filename: models.py
+from django.db import models
+
+class Blog(models.Model):
+    title = models.CharField(maxlength=200)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+# endof
+
+More random text
+# filename: views.py
+from django.shortcuts import render
+from django.views.generic import ListView
+from .models import Blog
+
+class BlogListView(ListView):
+    model = Blog
+    template_name = 'blog_list.html'
+    context_object_name = 'blogs'
+# endof
+
+# filename: urls.py
+from django.urls import path
+from .views import BlogListView
+
+urlpatterns = [
+    path('', BlogListView.as_view(), name='blog-list'),
+]
+# endof
+
+# filename: admin.py
+from django.contrib import admin
+from .models import Blog
+
+admin.site.register(Blog)
+# endof
+
+# filename: templates/blog_list.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blog List</title>
+</head>
+<body>
+    <h1>Blog List</h1>
+    <ul>
+        {% for blog in blogs %}
+            <li>{{ blog.title }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+# endof`, -1);
+
+        document.getElementById("parseChatBtn").onclick = function() {
+            var formData = new FormData(document.getElementById("inputForm"));
+            formData.append('editor_content', editor_html.getValue());
+
+            fetch("{% url 'mrw:parse_chat' %}", {
+                method: 'POST',
+                body: formData,
+            }).then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.json();
+            }).then(data => {
+                displayResults(data);
+            }).catch(error => {
+                console.error('Error:', error);
+                alert(error.message);
+            });
+        };
+
+        document.getElementById("writeChangesBtn").onclick = function() {
+            var formData = new FormData(document.getElementById("inputForm"));
+            formData.append('editor_content', editor_html.getValue());
+
+            fetch("{% url 'mrw:write_changes' %}", {
+                method: 'POST',
+                body: formData,
+            }).then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.json();
+            }).then(data => {
+                alert(data.status);
+            }).catch(error => {
+                console.error('Error:', error);
+                alert(error.message);
+            });
+        };
+
+        document.querySelector('.instructions-copy-icon').onclick = function() {
+            const instructionsText = `1) Prefix all code examples with "# filename: intended file" 2) Add "# endof" after each code example 3) Print all code in one section, not as individual sections/files`;
+            navigator.clipboard.writeText(instructionsText).then(function() {
+                // Text copied to clipboard
+            }, function(err) {
+                console.error('Error copying to clipboard: ', err);
+            });
+        };
+
+        function displayResults(data) {
+            var resultContainer = document.getElementById("result-container");
+            resultContainer.innerHTML = "";
+            for (var key in data) {
+                if (data.hasOwnProperty(key)) {
+                    var card = document.createElement("div");
+                    card.className = "card";
+                    
+                    var cardHeader = document.createElement("div");
+                    cardHeader.className = "card-header";
+                    cardHeader.textContent = key;
+
+                    var copyIcon = document.createElement("span");
+                    copyIcon.className = "copy-icon";
+                    copyIcon.innerHTML = "&#x1f4cb;";
+                    copyIcon.onclick = (function(content) {
+                        return function() {
+                            navigator.clipboard.writeText(content).then(function() {
+                                // Text copied to clipboard
+                            }, function(err) {
+                                console.error('Error copying to clipboard: ', err);
+                            });
+                        };
+                    })(data[key]);
+                    cardHeader.appendChild(copyIcon);
+
+                    var cardBody = document.createElement("div");
+                    cardBody.className = "card-body";
+
+                    var cardContent = document.createElement("pre");
+                    cardContent.className = "code-block";
+                    var code = document.createElement("code");
+                    code.className = "highlight";
+                    code.textContent = data[key];
+
+                    cardContent.appendChild(code);
+                    cardBody.appendChild(cardContent);
+                    card.appendChild(cardHeader);
+                    card.appendChild(cardBody);
+                    resultContainer.appendChild(card);
+
+                    hljs.highlightElement(code); // Highlight the code using highlightElement
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>
