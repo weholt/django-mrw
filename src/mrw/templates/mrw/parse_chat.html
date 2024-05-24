@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>mrw</title>
+    <title>mr.White</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -29,11 +29,21 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            position: relative;
+            min-height: 200px;
         }
         .editor {
             flex: 1;
             border: 1px solid #dee2e6;
             border-radius: .25rem;
+            height: 100%;
+        }
+        .expand-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            z-index: 1;
         }
         .result-container {
             flex: 1;
@@ -49,17 +59,21 @@
             position: relative;
             break-inside: avoid;
         }
-        .editor-title {
+        .editor-title, .card-header {
             background-color: #f8f9fa;
             border-bottom: 1px solid #dee2e6;
             padding: 10px;
             font-weight: bold;
+        }
+        .ace_content {
+            height: 100%;
         }
         .navbar {
             margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            width: 100%;
         }
         .code-block {
             background-color: #f5f5f5;
@@ -84,8 +98,16 @@
             display: flex;
             gap: 10px;
         }
-        .buttons-container i {
+        .buttons-container span {
+            display: flex;
+            align-items: center;
             cursor: pointer;
+            color: grey;
+            pointer-events: none;
+        }
+        .buttons-container span.enabled {
+            color: black;
+            pointer-events: auto;
         }
         .instructions-container {
             background-color: #f8f9fa;
@@ -116,23 +138,60 @@
             color: black;
             margin-left: 1rem;
         }
+        .github-icon {
+            margin-left: auto;
+            color: black;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px 0;
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+        }
+        .modal-backdrop {
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-dialog-centered {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .modal-content {
+            border-radius: 0.5rem;
+            padding: 20px;
+            background: #ffffff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .modal-header {
+            border-bottom: none;
+        }
+        .modal-footer {
+            border-top: none;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
 <nav class="navbar navbar-light bg-light">
-    <div class="d-flex align-items-center">
-        <a class="navbar-brand" href="#">mrw</a>
+    <div class="d-flex align-items-center w-100">
+        <a class="navbar-brand" href="#"><span class="text-muted">mr.</span>White</a>
         <div class="buttons-container">
-            <span id="parseChatBtn" class="me-4"><i class="fas fa-code mx-2"></i> Parse Chat </span>
+            <span id="parseChatBtn" class="me-4"><i class="fas fa-code mx-2"></i> Parse Chat</span>
             <span id="writeChangesBtn"><i class="fas fa-save mx-2"></i> Write changes to disk</span>
+            <span id="helpBtn" class="me-4 enabled"><i class="fas fa-question-circle mx-2"></i> Help</span>
         </div>
+        <a href="https://github.com/weholt/django-mrw" target="_blank" class="github-icon"><i class="fab fa-github fa-2x mx-3"></i></a>
     </div>
 </nav>
 <div class="container-fluid">
     <div class="left-panel">
         <div class="form-info-container">
             <div class="card form-card">
-                <div class="card-header">Project Details</div>
+                <div class="card-header text-uppercase">Project Details</div>
                 <div class="card-body">
                     <form id="inputForm" method="post">
                         {% csrf_token %}
@@ -150,20 +209,57 @@
             </div>
         </div>
         <div class="card editor-card">
-            <div class="editor-title">HTML Editor</div>
+            <div class="editor-title text-uppercase">Chat
+                <i class="fas fa-expand-arrows-alt expand-icon"></i>
+            </div>
             <div id="editor_html" class="editor"></div>
         </div>
     </div>
     <div id="result-container" class="result-container"></div>
 </div>
 
+<div class="footer text-muted p-4 mt-3">
+    <a class="navbar-brand" href="#"><span class="text-muted">mr.</span>White</a>
+    <p>&copy; 2024 Released by <a class="text-dark" href="https://weholt.org">Weholt Development Labs</a><br> under the <a class="text-dark" href="https://choosealicense.com/licenses/agpl-3.0/">GNU Affero General Public License v3</a></p>
+</div>
+
+<!-- Help Modal -->
+<div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="helpModalLabel">About mr. White</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><b>Tired of copy/pasting code when working with AI?<br> mr. White is here to help.</b></p>
+                <p>First, enter the name of your app. If the target app isn't part of the django instance you're
+                    running, add the root folder where you want to content to be created.
+                </p>
+                <p>When using ChatGPT, and perhaps other services as well, copy and paste the "GPT Instructions"
+                    by clicking on the icon beside the "GPT Instructions" title. Paste it into your AI chat.
+                </p>
+                <p>Hopefully, the chat will generate code in one single block you can copy and paste into mr. Whites CHAT editor,
+                    press "Parse chat" and then "Write changes to disk".
+                </p>
+                <div class="text-center mt-2"><b>Warning</b></div>
+                <p>This software comes with no warranty. Use at your own risk.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="w-50 btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         var editor_html = ace.edit("editor_html");
         editor_html.setTheme("ace/theme/github");
-        editor_html.session.setMode("ace/mode/html");
+        editor_html.session.setMode("ace/mode/python");
         editor_html.setValue(
 `Some random text
 # filename: models.py
@@ -175,35 +271,35 @@ class Blog(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.title
+        return this.title
 # endof
 
 More random text
 # filename: views.py
 from django.shortcuts import render
-from django.views.generic import ListView
-from .models import Blog
+from django.views.generic.ListView;
+from .models import Blog;
 
 class BlogListView(ListView):
-    model = Blog
-    template_name = 'blog_list.html'
-    context_object_name = 'blogs'
+    model = Blog;
+    template_name = 'blog_list.html';
+    context_object_name = 'blogs';
 # endof
 
 # filename: urls.py
-from django.urls import path
-from .views import BlogListView
+from django.urls import path;
+from .views import BlogListView;
 
 urlpatterns = [
     path('', BlogListView.as_view(), name='blog-list'),
-]
+];
 # endof
 
 # filename: admin.py
-from django.contrib import admin
-from .models import Blog
+from django.contrib import admin;
+from .models import Blog;
 
-admin.site.register(Blog)
+admin.site.register(Blog);
 # endof
 
 # filename: templates/blog_list.html
@@ -224,7 +320,34 @@ admin.site.register(Blog)
 </html>
 # endof`, -1);
 
-        document.getElementById("parseChatBtn").onclick = function() {
+        var parseChatBtn = document.getElementById("parseChatBtn");
+        var writeChangesBtn = document.getElementById("writeChangesBtn");
+        var helpBtn = document.getElementById("helpBtn");
+        var expandIcon = document.querySelector(".expand-icon");
+
+        parseChatBtn.classList.add("disabled");
+        writeChangesBtn.classList.add("disabled");
+
+        function toggleButtons() {
+            var appName = document.querySelector('input[name="app_name"]').value;
+            var editorContent = editor_html.getValue();
+            if (appName.trim() !== "" && editorContent.trim() !== "") {
+                parseChatBtn.classList.add("enabled");
+                parseChatBtn.classList.remove("disabled");
+            } else {
+                parseChatBtn.classList.add("disabled");
+                parseChatBtn.classList.remove("enabled");
+                writeChangesBtn.classList.add("disabled");
+                writeChangesBtn.classList.remove("enabled");
+            }
+        }
+
+        document.querySelector('input[name="app_name"]').addEventListener("input", toggleButtons);
+        editor_html.getSession().on('change', toggleButtons);
+
+        parseChatBtn.onclick = function() {
+            if (!parseChatBtn.classList.contains("enabled")) return;
+
             var formData = new FormData(document.getElementById("inputForm"));
             formData.append('editor_content', editor_html.getValue());
 
@@ -238,13 +361,17 @@ admin.site.register(Blog)
                 return response.json();
             }).then(data => {
                 displayResults(data);
+                writeChangesBtn.classList.add("enabled");
+                writeChangesBtn.classList.remove("disabled");
             }).catch(error => {
                 console.error('Error:', error);
                 alert(error.message);
             });
         };
 
-        document.getElementById("writeChangesBtn").onclick = function() {
+        writeChangesBtn.onclick = function() {
+            if (!writeChangesBtn.classList.contains("enabled")) return;
+
             var formData = new FormData(document.getElementById("inputForm"));
             formData.append('editor_content', editor_html.getValue());
 
@@ -271,6 +398,24 @@ admin.site.register(Blog)
             }, function(err) {
                 console.error('Error copying to clipboard: ', err);
             });
+        };
+
+        expandIcon.onclick = function() {
+            var editorContainer = document.querySelector(".editor-card");
+            var currentHeight = editorContainer.style.height;
+            if (currentHeight) {
+                editorContainer.style.height = "";
+            } else {
+                editorContainer.style.height = (editorContainer.offsetHeight * 3) + "px";
+            }
+            editor_html.resize();
+        };
+
+        helpBtn.onclick = function() {
+            var helpModal = new bootstrap.Modal(document.getElementById('helpModal'), {
+                keyboard: false
+            });
+            helpModal.show();
         };
 
         function displayResults(data) {
@@ -318,6 +463,16 @@ admin.site.register(Blog)
                 }
             }
         }
+
+        // Ensure editor uses entire area available
+        window.addEventListener('resize', function () {
+            editor_html.resize();
+        });
+
+        // Initial resize to make sure the editor fits the available space
+        setTimeout(function() {
+            editor_html.resize();
+        }, 0);
     });
 </script>
 </body>
