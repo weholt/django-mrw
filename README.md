@@ -1,8 +1,8 @@
-# Django Mr. White
+# Mr. White
 
 ![Mr. White](mrwhite.jpg)
 
-Reusable django app that will parses responses from ChatGPT and write the content to corresponding files.
+Reusable django app parsing responses from ChatGPT and write the content to corresponding files.
 
 Tested with:
 
