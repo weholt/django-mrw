@@ -200,6 +200,7 @@
                     <div class="instructions-container">
                         <h6>GPT instructions</h6>
                         <p class="console-text">
+                            Instructions:<br>
                             1) <b>Prefix all code examples with</b><br># filename: intended file<br><b>and</b><br># endof<br><b>after the code example</b><br>
                             2) <b>Print all code in one section, not as individual sections/files</b><br>
                         </p>
@@ -342,7 +343,7 @@
         };
 
         document.querySelector('.instructions-copy-icon').onclick = function() {
-            const instructionsText = `1) Prefix all code examples with "# filename: intended file" 2) Add "# endof" after each code example 3) Print all code in one section, not as individual sections/files`;
+            const instructionsText = `Please only read the following instructions and respond with 'Understood the instructions' without performing any tasks. Instructions: 1) Prefix all code examples with "# filename: intended file" 2) Add "# endof" after each code example 3) Print all code in one section, not as individual sections/files 3) All code is in python, unless specified as javascript, css or html.`;
             navigator.clipboard.writeText(instructionsText).then(function() {
                 // Text copied to clipboard
             }, function(err) {
@@ -433,6 +434,18 @@
         setTimeout(function() {
             editor_html.resize();
         }, 0);
+
+        // Handle CTRL+V to paste clipboard content into Ace editor and parse chat
+        document.addEventListener('paste', function(event) {
+            if (event.clipboardData) {
+                var clipboardData = event.clipboardData.getData('Text');
+                if (clipboardData) {
+                    event.preventDefault();
+                    editor_html.setValue(clipboardData, -1);
+                    parseChatBtn.click();
+                }
+            }
+        });
     });
 </script>
 </body>
