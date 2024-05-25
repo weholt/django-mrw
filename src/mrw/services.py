@@ -1,6 +1,20 @@
 import os
 import re
 
+import black
+
+
+def format_code_with_black(code):
+    try:
+        formatted_code = black.format_file_contents(
+            code,
+            fast=True,
+            mode=black.FileMode(),
+        )
+        return formatted_code
+    except (black.report.NothingChanged, black.parsing.InvalidInput):
+        return code
+
 
 def extract_code_blocks(content):
     """
@@ -40,5 +54,5 @@ def parse_chat(content, app_name, root_folder):
         filename = lines[0].strip()
         file_path = os.path.join(root_folder, app_name, filename)
         file_content = "\n".join(lines[1:])
-        parsed_data[file_path] = file_content
+        parsed_data[file_path] = format_code_with_black(file_content)
     return parsed_data
