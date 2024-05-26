@@ -287,7 +287,7 @@
             <a class="navbar-brand" href="#"><span class="text-muted">mr.</span>White</a>
             <div class="buttons-container">
                 <span id="parseChatBtn" class="me-4"><i class="fas fa-code mx-2"></i> Parse Chat</span>
-                <span id="writeChangesBtn"><i class="fas fa-save mx-2"></i> Write selected elements to disk</span>
+                <span id="writeChangesBtn" class="disabled"><i class="fas fa-save mx-2"></i> Write selected elements to disk</span>
                 <span id="helpBtn" class="me-4 enabled"><i class="fas fa-question-circle mx-2"></i> Help</span>
             </div>
             <div class="right-icons">
@@ -329,9 +329,7 @@
                                 <b>after the code example</b>
                             </li>
                             <br>
-                            <li><b>Print all code in
-
-                                    one section, not as individual sections/files</b></li>
+                            <li><b>Print all code in one section, not as individual sections/files</b></li>
                             <br>
                             <li><b>All code is in python, unless specified as javascript, css or html.</b></li>
                         </ol>
@@ -498,8 +496,11 @@
                     return response.json();
                 }).then(data => {
                     displayResults(data);
-                    writeChangesBtn.classList.add("enabled");
-                    writeChangesBtn.classList.remove("disabled");
+                    // Only enable "Write changes" if there are results
+                    if (Object.keys(data).length > 0) {
+                        writeChangesBtn.classList.add("enabled");
+                        writeChangesBtn.classList.remove("disabled");
+                    }
                     // Resize editor after results are displayed
                     setTimeout(function () {
                         editor_html.resize();
@@ -539,7 +540,6 @@
             document.querySelector('.instructions-copy-icon').onclick = function () {
                 const instructionsText = `
                 Please only read the following instructions and respond with '
-
 Understood the instructions' without performing any tasks. 
                 Instructions: 
                     1) Prefix all code examples with "# filename: intended file" similar to this template for a piece of code in a file called models.py:
@@ -745,9 +745,11 @@ Understood the instructions' without performing any tasks.
             }
 
             editor_html.addEventListener('paste', pasteHandler);
-            result_container.addEventListener('paste', pasteHandler);        
+            result_container.addEventListener('paste', pasteHandler);
 
+            appNameInput.focus();
         });
     </script>
 </body>
+
 </html>
