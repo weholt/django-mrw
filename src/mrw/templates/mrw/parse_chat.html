@@ -448,6 +448,7 @@
             var appNameInput = document.querySelector('input[name="app_name"]');
             var rootFolderInput = document.querySelector('input[name="root_folder"]');
             var copyInstructionsBtn = document.getElementById("copy_instructions");
+            var result_container = document.getElementById("result-container");
 
             parseChatBtn.classList.add("disabled");
             writeChangesBtn.classList.add("disabled");
@@ -732,7 +733,7 @@ Understood the instructions' without performing any tasks.
                 });
             }
 
-            document.addEventListener('paste', function (event) {
+            function pasteHandler(event) {
                 if (event.clipboardData) {
                     var clipboardData = event.clipboardData.getData('Text');
                     if (clipboardData) {
@@ -741,9 +742,12 @@ Understood the instructions' without performing any tasks.
                         parseChatBtn.click();
                     }
                 }
-            });
+            }
+
+            editor_html.addEventListener('paste', pasteHandler);
+            result_container.addEventListener('paste', pasteHandler);        
+
         });
     </script>
 </body>
-
 </html>
