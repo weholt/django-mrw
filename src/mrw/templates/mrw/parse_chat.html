@@ -173,6 +173,11 @@
             color: black;
         }
 
+        .right-icons {
+            margin-left: auto;
+            color: black;
+        }
+
         .footer {
             text-align: center;
             margin-top: 20px;
@@ -248,6 +253,10 @@
             cursor: pointer;
         }
 
+        .prompt-icon {
+            cursor: pointer;
+        }
+
         .prompt-card .fa-copy {
             right: 30px;
         }
@@ -280,10 +289,12 @@
                 <span id="parseChatBtn" class="me-4"><i class="fas fa-code mx-2"></i> Parse Chat</span>
                 <span id="writeChangesBtn"><i class="fas fa-save mx-2"></i> Write selected elements to disk</span>
                 <span id="helpBtn" class="me-4 enabled"><i class="fas fa-question-circle mx-2"></i> Help</span>
-                <span id="togglePromptsBtn" class="me-4 enabled"><i class="fas fa-bars mx-2"></i> Prompts</span>
             </div>
-            <a href="https://github.com/weholt/django-mrw" target="_blank" class="github-icon"><i
-                    class="fab fa-github fa-2x mx-3"></i></a>
+            <div class="right-icons">
+                <span id="togglePromptsBtn" class="prompt-icon enabled"><i class="fas fa-bars fa-2x"></i></span>
+                <a href="https://github.com/weholt/django-mrw" target="_blank" class="github-icon"><i
+                        class="fab fa-github fa-2x mx-3"></i></a>
+            </div>
         </div>
     </nav>
     <div class="container-fluid">
@@ -341,6 +352,7 @@
         </div>
         <div id="result-container" class="result-container"></div>
         <div id="right-panel" class="right-panel">
+            <span id="closePromptsBtn" class="prompt-icon enabled"><i class="fas fa-bars fa-2x"></i></span>
             <div class="search-container">
                 <input type="text" id="searchInput" placeholder="Search prompts">
             </div>
@@ -429,6 +441,7 @@
             var writeChangesBtn = document.getElementById("writeChangesBtn");
             var helpBtn = document.getElementById("helpBtn");
             var togglePromptsBtn = document.getElementById("togglePromptsBtn");
+            var closePromptsBtn = document.getElementById("closePromptsBtn");
             var rightPanel = document.getElementById("right-panel");
             var searchInput = document.getElementById("searchInput");
             var expandIcon = document.querySelector(".expand-icon");
@@ -568,13 +581,16 @@ Understood the instructions' without performing any tasks.
                 helpModal.show();
             };
 
-            togglePromptsBtn.onclick = function () {
+            function toggleRightPanel() {
                 if (rightPanel.style.display === "none" || rightPanel.style.display === "") {
                     rightPanel.style.display = "block";
                 } else {
                     rightPanel.style.display = "none";
                 }
             };
+
+            togglePromptsBtn.onclick = toggleRightPanel;
+            closePromptsBtn.onclick = toggleRightPanel;
 
             searchInput.addEventListener("input", function () {
                 var searchValue = searchInput.value.toLowerCase();
