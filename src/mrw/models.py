@@ -1,6 +1,7 @@
-# flake8: noqa
-# type: ignore
-
 from django.db import models
 
-# Create your models here.
+
+class Prompt(models.Model):
+    name = models.CharField(max_length=100)
+    prompt = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)

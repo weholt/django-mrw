@@ -1,6 +1,7 @@
-{% load crispy_forms_tags %}
+{% load static crispy_forms_tags %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>mr.White</title>
@@ -8,23 +9,27 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/default.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        body, html {
+        body,
+        html {
             height: 100%;
             margin: 0;
             display: flex;
             flex-direction: column;
         }
+
         .container-fluid {
             flex: 1;
             display: flex;
             flex-direction: row;
         }
+
         .left-panel {
             width: 600px;
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
+
         .editor-card {
             flex: 1;
             display: flex;
@@ -32,12 +37,14 @@
             position: relative;
             min-height: 200px;
         }
+
         .editor {
             flex: 1;
             border: 1px solid #dee2e6;
             border-radius: .25rem;
             height: 100%;
         }
+
         .expand-icon {
             position: absolute;
             top: 10px;
@@ -45,6 +52,7 @@
             cursor: pointer;
             z-index: 1;
         }
+
         .result-container {
             flex: 1;
             overflow-y: auto;
@@ -52,22 +60,27 @@
             grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
             gap: 10px;
         }
+
         .card {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-radius: .25rem;
             margin: 5px;
             position: relative;
             break-inside: avoid;
         }
-        .editor-title, .card-header {
+
+        .editor-title,
+        .card-header {
             background-color: #f8f9fa;
             border-bottom: 1px solid #dee2e6;
             padding: 10px;
             font-weight: bold;
         }
+
         .ace_content {
             height: 100%;
         }
+
         .navbar {
             margin-bottom: 20px;
             display: flex;
@@ -75,6 +88,7 @@
             align-items: center;
             width: 100%;
         }
+
         .code-block {
             background-color: #f5f5f5;
             border-radius: 5px;
@@ -82,22 +96,32 @@
             overflow-x: auto;
             white-space: pre-wrap;
         }
+
         .highlight {
             padding: 10px;
         }
+
         .card-header {
             font-size: 0.9rem;
         }
-        .copy-icon {
+
+        .copy-icon,
+        .delete-icon {
             position: absolute;
             top: 10px;
             right: 10px;
             cursor: pointer;
         }
+
+        .delete-icon {
+            right: 30px;
+        }
+
         .buttons-container {
             display: flex;
             gap: 10px;
         }
+
         .buttons-container span {
             display: flex;
             align-items: center;
@@ -105,10 +129,12 @@
             color: grey;
             pointer-events: none;
         }
+
         .buttons-container span.enabled {
             color: black;
             pointer-events: auto;
         }
+
         .instructions-container {
             background-color: #f8f9fa;
             padding: 10px;
@@ -117,12 +143,14 @@
             position: relative;
             margin-top: 10px;
         }
+
         .instructions-copy-icon {
             position: absolute;
             top: 10px;
             right: 10px;
             cursor: pointer;
         }
+
         .console-text {
             background-color: #d1d1d1;
             color: #5c5c5c;
@@ -132,16 +160,19 @@
             font-family: Consolas, 'Courier New', monospace;
             font-size: small;
         }
+
         .navbar-brand {
             font-size: 1.5rem;
             font-weight: bold;
             color: black;
             margin-left: 1rem;
         }
+
         .github-icon {
             margin-left: auto;
             color: black;
         }
+
         .footer {
             text-align: center;
             margin-top: 20px;
@@ -149,304 +180,554 @@
             background-color: #f8f9fa;
             border-top: 1px solid #dee2e6;
         }
+
         .modal-backdrop {
-            background-color: rgba(0,0,0,0.5);
+            background-color: rgba(0, 0, 0, 0.5);
         }
+
         .modal-dialog-centered {
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
         }
+
         .modal-content {
             border-radius: 0.5rem;
             padding: 20px;
             background: #ffffff;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+
         .modal-header {
             border-bottom: none;
         }
+
         .modal-footer {
             border-top: none;
             text-align: center;
             display: flex;
             justify-content: center;
         }
+
+        .toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1100;
+        }
+
+        .toast {
+            background-color: #343a40;
+            color: #ffffff;
+        }
+
+        .right-panel {
+            width: 600px;
+            position: fixed;
+            right: 0;
+            top: 0;
+            height: 100%;
+            background: #f8f9fa;
+            border-left: 1px solid #dee2e6;
+            padding: 15px;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            display: none;
+        }
+
+        .prompt-card {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .prompt-card .fa-copy,
+        .prompt-card .fa-trash {
+            position: absolute;
+            top: 10px;
+            cursor: pointer;
+        }
+
+        .prompt-card .fa-copy {
+            right: 30px;
+        }
+
+        .prompt-card .fa-trash {
+            right: 10px;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .search-container input[type="text"] {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
     </style>
 </head>
+
 <body>
-<nav class="navbar navbar-light bg-light">
-    <div class="d-flex align-items-center w-100">
-        <a class="navbar-brand" href="#"><span class="text-muted">mr.</span>White</a>
-        <div class="buttons-container">
-            <span id="parseChatBtn" class="me-4"><i class="fas fa-code mx-2"></i> Parse Chat</span>
-            <span id="writeChangesBtn"><i class="fas fa-save mx-2"></i> Write selected elements to disk</span>
-            <span id="helpBtn" class="me-4 enabled"><i class="fas fa-question-circle mx-2"></i> Help</span>
+    <nav class="navbar navbar-light bg-light">
+        <div class="d-flex align-items-center w-100">
+            <a class="navbar-brand" href="#"><span class="text-muted">mr.</span>White</a>
+            <div class="buttons-container">
+                <span id="parseChatBtn" class="me-4"><i class="fas fa-code mx-2"></i> Parse Chat</span>
+                <span id="writeChangesBtn"><i class="fas fa-save mx-2"></i> Write selected elements to disk</span>
+                <span id="helpBtn" class="me-4 enabled"><i class="fas fa-question-circle mx-2"></i> Help</span>
+                <span id="togglePromptsBtn" class="me-4 enabled"><i class="fas fa-bars mx-2"></i> Prompts</span>
+            </div>
+            <a href="https://github.com/weholt/django-mrw" target="_blank" class="github-icon"><i
+                    class="fab fa-github fa-2x mx-3"></i></a>
         </div>
-        <a href="https://github.com/weholt/django-mrw" target="_blank" class="github-icon"><i class="fab fa-github fa-2x mx-3"></i></a>
-    </div>
-</nav>
-<div class="container-fluid">
-    <div class="left-panel">
-        <div class="form-info-container">
-            <div class="card form-card">
-                <div class="card-header text-uppercase">Project Details</div>
-                <div class="card-body">
-                    <form id="inputForm" method="post">
-                        {% csrf_token %}
-                        {{ form|crispy }}
-                    </form>
-                    <div class="instructions-container">
-                        <h6>GPT instructions</h6>
-                        <p class="console-text">
-                            Instructions:<br>
-                            1) <b>Prefix all code examples with</b><br># filename: intended file<br><b>and</b><br># endof<br><b>after the code example</b><br>
-                            2) <b>Print all code in one section, not as individual sections/files</b><br>
+    </nav>
+    <div class="container-fluid">
+        <div class="left-panel">
+            <div class="form-info-container">
+                <div class="card form-card">
+                    <div class="card-header text-uppercase">Step 1: Project Details</div>
+                    <div class="card-body">
+                        <p>
+                            Give your app a name. If it lives outside the current django instance, you need to specify
+                            a root folder as well.
                         </p>
-                        <i class="fas fa-copy instructions-copy-icon"></i>
+                        <form id="inputForm" method="post">
+                            {% csrf_token %}
+                            {{ form|crispy }}
+                        </form>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="card editor-card">
-            <div class="editor-title text-uppercase">Chat
-                <i class="fas fa-expand-arrows-alt expand-icon"></i>
+            <div class="card">
+                <div class="card-header text-uppercase">Step 2: GPT instructions <i
+                        class="fas fa-copy instructions-copy-icon"></i></div>
+                <div class="card-body small">
+                    <div class="instructions">
+                        <p>Instructions:</p>
+                        <ol>
+                            <li>
+                                <b>Prefix all code examples with</b><br>
+                                <code># filename: intended file</code><br>
+                                <b>and</b><br>
+                                <code># endof</code><br>
+                                <b>after the code example</b>
+                            </li>
+                            <br>
+                            <li><b>Print all code in
+
+                                    one section, not as individual sections/files</b></li>
+                            <br>
+                            <li><b>All code is in python, unless specified as javascript, css or html.</b></li>
+                        </ol>
+                    </div>
+                    <div class="text-center mt-3">
+                        <div class="btn btn-secondary w-100" id="copy_instructions">Click to copy instructions to
+                            clipboard and then paste it into ChatGPT</div>
+                    </div>
+                </div>
             </div>
-            <div id="editor_html" class="editor"></div>
+
+            <div class="card editor-card">
+                <div class="editor-title text-uppercase">Step 3: Press CTRL+V to paste chat result
+                    <i class="fas fa-expand-arrows-alt expand-icon"></i>
+                </div>
+                <div id="editor_html" class="editor"></div>
+            </div>
+        </div>
+        <div id="result-container" class="result-container"></div>
+        <div id="right-panel" class="right-panel">
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search prompts">
+            </div>
+            <form id="promptForm" method="post">
+                {% csrf_token %}
+                {{ prompt_form|crispy }}
+                <button type="submit" class="w-100 m-2 btn btn-secondary"><i class="fa-solid fa-floppy-disk"></i>
+                    Save</button>
+            </form>
+            <div id="prompt-list">
+                {% for prompt in prompts %}
+                <div class="card prompt-card" data-id="{{ prompt.id }}">
+                    <div class="card-header">
+                        {{ prompt.name }}
+                        <i class="fas fa-copy" onclick="copyPrompt('{{ prompt.prompt }}')"></i>
+                        <i class="fas fa-trash" onclick="deletePrompt({{ prompt.id }})"></i>
+                    </div>
+                    <div class="card-body">{{ prompt.prompt }}</div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
-    <div id="result-container" class="result-container"></div>
-</div>
 
-<div class="footer text-muted p-4 mt-3">
-    <a class="navbar-brand" href="#"><span class="text-muted">mr.</span>White</a>
-    <p>&copy; 2024 Released by <a class="text-dark" href="https://weholt.org">Weholt Development Labs</a><br> under the <a class="text-dark" href="https://choosealicense.com/licenses/agpl-3.0/">GNU Affero General Public License v3</a></p>
-</div>
+    <div class="footer text-muted p-4 mt-3">
+        <a class="navbar-brand" href="#"><span class="text-muted">mr.</span>White</a>
+        <p>&copy; 2024 Released by <a class="text-dark" href="https://weholt.org">Weholt Development Labs</a><br> under
+            the <a class="text-dark" href="https://choosealicense.com/licenses/agpl-3.0/">GNU Affero General Public
+                License v3</a></p>
+    </div>
 
-<!-- Help Modal -->
-<div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="helpModalLabel">About mr. White</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p><b>Tired of copy/pasting code when working with AI?<br> mr. White is here to help.</b></p>
-                <p>First, enter the name of your app. If the target app isn't part of the django instance you're
-                    running, add the root folder where you want to content to be created.
-                </p>
-                <p>When using ChatGPT, and perhaps other services as well, copy and paste the "GPT Instructions"
-                    by clicking on the icon beside the "GPT Instructions" title. Paste it into your AI chat.
-                </p>
-                <p>Hopefully, the chat will generate code in one single block you can copy and paste into mr. Whites CHAT editor,
-                    press "Parse chat" and then "Write changes to disk".
-                </p>
-                <div class="text-center mt-2"><b>Warning</b></div>
-                <p>This software comes with no warranty. Use at your own risk.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="w-50 btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <!-- Help Modal -->
+    <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="helpModalLabel">About mr. White</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><b>Tired of copy/pasting code when working with AI?<br> mr. White is here to help.</b></p>
+                    <p>First, enter the name of your app. If the target app isn't part of the django instance you're
+                        running, add the root folder where you want to content to be created.
+                    </p>
+                    <p>When using ChatGPT, and perhaps other services as well, copy and paste the "GPT Instructions"
+                        by clicking on the icon beside the "GPT Instructions" title. Paste it into your AI chat.
+                    </p>
+                    <p>Hopefully, the chat will generate code in one single block you can copy and paste into mr. Whites
+                        CHAT editor,
+                        press "Parse chat" and then "Write changes to disk".
+                    </p>
+                    <div class="text-center mt-2"><b>Warning</b></div>
+                    <p>This software comes with no warranty. Use at your own risk.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="w-50 btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var editor_html = ace.edit("editor_html");
-        editor_html.setTheme("ace/theme/github");
-        editor_html.session.setMode("ace/mode/html");
-        editor_html.setValue("# Paste your chat here");
+    <!-- Toast message -->
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="toast-message" class="toast align-items-center text-bg-dark border-0" role="alert"
+            aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
 
-        var parseChatBtn = document.getElementById("parseChatBtn");
-        var writeChangesBtn = document.getElementById("writeChangesBtn");
-        var helpBtn = document.getElementById("helpBtn");
-        var expandIcon = document.querySelector(".expand-icon");
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var editor_html = ace.edit("editor_html");
+            editor_html.setTheme("ace/theme/github");
+            editor_html.session.setMode("ace/mode/html");
+            editor_html.setValue("# Paste your chat here");
 
-        parseChatBtn.classList.add("disabled");
-        writeChangesBtn.classList.add("disabled");
+            var parseChatBtn = document.getElementById("parseChatBtn");
+            var writeChangesBtn = document.getElementById("writeChangesBtn");
+            var helpBtn = document.getElementById("helpBtn");
+            var togglePromptsBtn = document.getElementById("togglePromptsBtn");
+            var rightPanel = document.getElementById("right-panel");
+            var searchInput = document.getElementById("searchInput");
+            var expandIcon = document.querySelector(".expand-icon");
+            var appNameInput = document.querySelector('input[name="app_name"]');
+            var rootFolderInput = document.querySelector('input[name="root_folder"]');
+            var copyInstructionsBtn = document.getElementById("copy_instructions");
 
-        function toggleButtons() {
-            var appName = document.querySelector('input[name="app_name"]').value;
-            var editorContent = editor_html.getValue();
-            if (appName.trim() !== "" && editorContent.trim() !== "") {
-                parseChatBtn.classList.add("enabled");
-                parseChatBtn.classList.remove("disabled");
-            } else {
-                parseChatBtn.classList.add("disabled");
-                parseChatBtn.classList.remove("enabled");
-                writeChangesBtn.classList.add("disabled");
-                writeChangesBtn.classList.remove("enabled");
-            }
-        }
+            parseChatBtn.classList.add("disabled");
+            writeChangesBtn.classList.add("disabled");
 
-        document.querySelector('input[name="app_name"]').addEventListener("input", toggleButtons);
-        editor_html.getSession().on('change', toggleButtons);
-
-        parseChatBtn.onclick = function() {
-            if (!parseChatBtn.classList.contains("enabled")) return;
-
-            var formData = new FormData(document.getElementById("inputForm"));
-            formData.append('editor_content', editor_html.getValue());
-
-            fetch("{% url 'mrw:parse_chat' %}", {
-                method: 'POST',
-                body: formData,
-            }).then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text) });
+            function toggleButtons() {
+                var appName = appNameInput.value;
+                var editorContent = editor_html.getValue();
+                if (appName.trim() !== "" && editorContent.trim() !== "") {
+                    parseChatBtn.classList.add("enabled");
+                    parseChatBtn.classList.remove("disabled");
+                } else {
+                    parseChatBtn.classList.add("disabled");
+                    parseChatBtn.classList.remove("enabled");
+                    writeChangesBtn.classList.add("disabled");
+                    writeChangesBtn.classList.remove("enabled");
                 }
-                return response.json();
-            }).then(data => {
-                displayResults(data);
-                writeChangesBtn.classList.add("enabled");
-                writeChangesBtn.classList.remove("disabled");
-                // Resize editor after results are displayed
-                setTimeout(function() {
-                    editor_html.resize();
-                }, 0);
-            }).catch(error => {
-                console.error('Error:', error);
-                alert(error.message);
-            });
-        };
-
-        writeChangesBtn.onclick = function() {
-            if (!writeChangesBtn.classList.contains("enabled")) return;
-
-            var formData = new FormData(document.getElementById("inputForm"));
-            formData.append('editor_content', editor_html.getValue());
-            var selectedCodeBlocks = document.querySelectorAll(".card input[type='checkbox']:checked");
-            selectedCodeBlocks.forEach(function(checkbox) {
-                formData.append('code_blocks', checkbox.nextSibling.textContent);
-            });
-
-            fetch("{% url 'mrw:write_changes' %}", {
-                method: 'POST',
-                body: formData,
-            }).then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text) });
+                if (appName.trim() === "") {
+                    appNameInput.style.borderColor = "red";
+                } else {
+                    appNameInput.style.borderColor = "";
                 }
-                return response.json();
-            }).then(data => {
-                alert(data.status);
-            }).catch(error => {
-                console.error('Error:', error);
-                alert(error.message);
-            });
-        };
-
-        document.querySelector('.instructions-copy-icon').onclick = function() {
-            const instructionsText = `Please only read the following instructions and respond with 'Understood the instructions' without performing any tasks. Instructions: 1) Prefix all code examples with "# filename: intended file" 2) Add "# endof" after each code example 3) Print all code in one section, not as individual sections/files 3) All code is in python, unless specified as javascript, css or html.`;
-            navigator.clipboard.writeText(instructionsText).then(function() {
-                // Text copied to clipboard
-            }, function(err) {
-                console.error('Error copying to clipboard: ', err);
-            });
-        };
-
-        expandIcon.onclick = function() {
-            var editorContainer = document.querySelector(".editor-card");
-            var currentHeight = editorContainer.style.height;
-            if (currentHeight) {
-                editorContainer.style.height = "";
-            } else {
-                editorContainer.style.height = (editorContainer.offsetHeight * 3) + "px";
             }
-            editor_html.resize();
-        };
 
-        helpBtn.onclick = function() {
-            var helpModal = new bootstrap.Modal(document.getElementById('helpModal'), {
-                keyboard: false
+            appNameInput.addEventListener("input", toggleButtons);
+            rootFolderInput.addEventListener("blur", function () {
+                if (appNameInput.value.trim() !== "") {
+                    copyInstructionsBtn.click();
+                    showToast("Copied instructions to clipboard. Please go to ChatGPT and paste it.", "success");
+                }
             });
-            helpModal.show();
-        };
 
-        function displayResults(data) {
-            var resultContainer = document.getElementById("result-container");
-            resultContainer.innerHTML = "";
-            for (var key in data) {
-                if (data.hasOwnProperty(key)) {
-                    var card = document.createElement("div");
-                    card.className = "card";
-                    
-                    var cardHeader = document.createElement("div");
-                    cardHeader.className = "card-header d-flex align-items-center";
-                    
-                    var checkbox = document.createElement("input");
-                    checkbox.type = "checkbox";
-                    checkbox.checked = true;
-                    checkbox.className = "me-2";
+            editor_html.getSession().on('change', toggleButtons);
 
-                    var filename = document.createElement("span");
-                    filename.textContent = key;
+            parseChatBtn.onclick = function () {
+                if (!parseChatBtn.classList.contains("enabled")) return;
 
-                    var copyIcon = document.createElement("span");
-                    copyIcon.className = "copy-icon";
-                    copyIcon.innerHTML = "&#x1f4cb;";
-                    copyIcon.onclick = (function(content) {
-                        return function() {
-                            navigator.clipboard.writeText(content).then(function() {
-                                // Text copied to clipboard
-                            }, function(err) {
-                                console.error('Error copying to clipboard: ', err);
-                            });
+                var formData = new FormData(document.getElementById("inputForm"));
+                formData.append('editor_content', editor_html.getValue());
+
+                fetch("{% url 'mrw:parse_chat' %}", {
+                    method: 'POST',
+                    body: formData,
+                }).then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text) });
+                    }
+                    return response.json();
+                }).then(data => {
+                    displayResults(data);
+                    writeChangesBtn.classList.add("enabled");
+                    writeChangesBtn.classList.remove("disabled");
+                    // Resize editor after results are displayed
+                    setTimeout(function () {
+                        editor_html.resize();
+                    }, 0);
+                }).catch(error => {
+                    console.error('Error:', error);
+                    showToast(error.message, "danger");
+                });
+            };
+
+            writeChangesBtn.onclick = function () {
+                if (!writeChangesBtn.classList.contains("enabled")) return;
+
+                var formData = new FormData(document.getElementById("inputForm"));
+                formData.append('editor_content', editor_html.getValue());
+                var selectedCodeBlocks = document.querySelectorAll(".card input[type='checkbox']:checked");
+                selectedCodeBlocks.forEach(function (checkbox) {
+                    formData.append('code_blocks', checkbox.nextSibling.textContent);
+                });
+
+                fetch("{% url 'mrw:write_changes' %}", {
+                    method: 'POST',
+                    body: formData,
+                }).then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text) });
+                    }
+                    return response.json();
+                }).then(data => {
+                    showToast(data.status, "success");
+                }).catch(error => {
+                    console.error('Error:', error);
+                    showToast(error.message, "danger");
+                });
+            };
+
+            document.querySelector('.instructions-copy-icon').onclick = function () {
+                const instructionsText = `
+                Please only read the following instructions and respond with '
+
+Understood the instructions' without performing any tasks. 
+                Instructions: 
+                    1) Prefix all code examples with "# filename: intended file" similar to this template for a piece of code in a file called models.py:
+
+                        # filename: models.py
+                        class MyModel(models.Model):
+                            pass
+                        # endof
+
+                    2) Add "# endof" after each code example 
+                    3) Print all code in one section, not as individual sections/files 
+                    4) All code is in python, unless specified as javascript, css or html.`;
+                navigator.clipboard.writeText(instructionsText).then(function () {
+                    showToast("Instructions copied to clipboard. Please go to ChatGPT and paste it into the chat.", "success");
+                }, function (err) {
+                    console.error('Error copying to clipboard: ', err);
+                    showToast("Failed to copy instructions to clipboard", "danger");
+                });
+            };
+
+            copyInstructionsBtn.onclick = function () {
+                document.querySelector('.instructions-copy-icon').click();
+            };
+
+            expandIcon.onclick = function () {
+                var editorContainer = document.querySelector(".editor-card");
+                var currentHeight = editorContainer.style.height;
+                if (currentHeight) {
+                    editorContainer.style.height = "";
+                } else {
+                    editorContainer.style.height = (editorContainer.offsetHeight * 3) + "px";
+                }
+                editor_html.resize();
+            };
+
+            helpBtn.onclick = function () {
+                var helpModal = new bootstrap.Modal(document.getElementById('helpModal'), {
+                    keyboard: false
+                });
+                helpModal.show();
+            };
+
+            togglePromptsBtn.onclick = function () {
+                if (rightPanel.style.display === "none" || rightPanel.style.display === "") {
+                    rightPanel.style.display = "block";
+                } else {
+                    rightPanel.style.display = "none";
+                }
+            };
+
+            searchInput.addEventListener("input", function () {
+                var searchValue = searchInput.value.toLowerCase();
+                var prompts = document.querySelectorAll(".prompt-card");
+                prompts.forEach(function (prompt) {
+                    var promptText = prompt.textContent.toLowerCase();
+                    if (promptText.includes(searchValue)) {
+                        prompt.style.display = "";
+                    } else {
+                        prompt.style.display = "none";
+                    }
+                });
+            });
+
+            function displayResults(data) {
+                var resultContainer = document.getElementById("result-container");
+                resultContainer.innerHTML = "";
+                for (var key in data) {
+                    if (data.hasOwnProperty(key)) {
+                        var card = document.createElement("div");
+                        card.className = "card";
+
+                        var cardHeader = document.createElement("div");
+                        cardHeader.className = "card-header d-flex align-items-center";
+
+                        var checkbox = document.createElement("input");
+                        checkbox.type = "checkbox";
+                        checkbox.checked = true;
+                        checkbox.className = "me-2";
+
+                        var filename = document.createElement("span");
+                        filename.textContent = key;
+
+                        var copyIcon = document.createElement("span");
+                        copyIcon.className = "copy-icon";
+                        copyIcon.innerHTML = "&#x1f4cb;";
+                        copyIcon.onclick = (function (content) {
+                            return function () {
+                                navigator.clipboard.writeText(content).then(function () {
+                                    showToast("Text copied to clipboard", "success");
+                                }, function (err) {
+                                    console.error('Error copying to clipboard: ', err);
+                                    showToast("Failed to copy text to clipboard", "danger");
+                                });
+                            };
+                        })(data[key]);
+
+                        var deleteIcon = document.createElement("span");
+                        deleteIcon.className = "delete-icon";
+                        deleteIcon.innerHTML = "&#x1f5d1;";
+                        deleteIcon.onclick = function () {
+                            card.remove();
                         };
-                    })(data[key]);
 
-                    cardHeader.appendChild(checkbox);
-                    cardHeader.appendChild(filename);
-                    cardHeader.appendChild(copyIcon);
+                        cardHeader.appendChild(checkbox);
+                        cardHeader.appendChild(filename);
+                        cardHeader.appendChild(deleteIcon);
+                        cardHeader.appendChild(copyIcon);
 
-                    var cardBody = document.createElement("div");
-                    cardBody.className = "card-body";
+                        var cardBody = document.createElement("div");
+                        cardBody.className = "card-body";
 
-                    var cardContent = document.createElement("pre");
-                    cardContent.className = "code-block";
-                    var code = document.createElement("code");
-                    code.className = "highlight";
-                    code.textContent = data[key];
+                        var cardContent = document.createElement("pre");
+                        cardContent.className = "code-block";
+                        var code = document.createElement("code");
+                        code.className = "highlight";
+                        code.textContent = data[key];
 
-                    cardContent.appendChild(code);
-                    cardBody.appendChild(cardContent);
-                    card.appendChild(cardHeader);
-                    card.appendChild(cardBody);
-                    resultContainer.appendChild(card);
+                        cardContent.appendChild(code);
+                        cardBody.appendChild(cardContent);
+                        card.appendChild(cardHeader);
+                        card.appendChild(cardBody);
+                        resultContainer.appendChild(card);
 
-                    hljs.highlightElement(code); // Highlight the code using highlightElement
+                        hljs.highlightElement(code); // Highlight the code using highlightElement
+                    }
                 }
             }
-        }
 
-        // Ensure editor uses entire area available
-        window.addEventListener('resize', function () {
-            editor_html.resize();
-        });
+            function showToast(message, type) {
+                var toastEl = document.getElementById('toast-message');
+                var toastBody = toastEl.querySelector('.toast-body');
+                toastBody.textContent = message;
 
-        // Initial resize to make sure the editor fits the available space
-        setTimeout(function() {
-            editor_html.resize();
-        }, 0);
-
-        // Handle CTRL+V to paste clipboard content into Ace editor and parse chat
-        document.addEventListener('paste', function(event) {
-            if (event.clipboardData) {
-                var clipboardData = event.clipboardData.getData('Text');
-                if (clipboardData) {
-                    event.preventDefault();
-                    editor_html.setValue(clipboardData, -1);
-                    parseChatBtn.click();
-                }
+                toastEl.className = 'toast align-items-center text-bg-' + type + ' border-0';
+                var toast = new bootstrap.Toast(toastEl);
+                toast.show();
             }
+
+            $('#promptForm').on('submit', function (event) {
+                event.preventDefault();
+                $.ajax({
+                    url: '{% url "mrw:save_prompt" %}',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        $('#prompt-list').prepend(
+                            '<div class="card prompt-card" data-id="' + response.id + '">' +
+                            '<div class="card-header">' +
+                            response.name +
+                            '<i class="fas fa-copy" onclick="copyPrompt(\'' + response.prompt + '\')"></i>' +
+                            '<i class="fas fa-trash" onclick="deletePrompt(' + response.id + ')"></i>' +
+                            '</div>' +
+                            '<div class="card-body">' + response.prompt + '</div>' +
+                            '</div>'
+                        );
+                        $('#promptForm')[0].reset();
+                        showToast("Prompt saved successfully", "success");
+                    },
+                    error: function (response) {
+                        showToast("Failed to save the prompt", "danger");
+                    }
+                });
+            });
+
+            window.copyPrompt = function (prompt) {
+                navigator.clipboard.writeText(prompt).then(function () {
+                    showToast("Prompt copied to clipboard", "success");
+                }, function () {
+                    showToast("Failed to copy prompt", "danger");
+                });
+            }
+
+            window.deletePrompt = function (id) {
+                $.ajax({
+                    url: '{% url "mrw:delete_prompt" %}',
+                    type: 'POST',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}',
+                        'id': id
+                    },
+                    success: function (response) {
+                        $('.prompt-card[data-id="' + id + '"]').remove();
+                        showToast("Prompt deleted successfully", "success");
+                    },
+                    error: function (response) {
+                        showToast("Failed to delete the prompt", "danger");
+                    }
+                });
+            }
+
+            document.addEventListener('paste', function (event) {
+                if (event.clipboardData) {
+                    var clipboardData = event.clipboardData.getData('Text');
+                    if (clipboardData) {
+                        event.preventDefault();
+                        editor_html.setValue(clipboardData, -1);
+                        parseChatBtn.click();
+                    }
+                }
+            });
         });
-    });
-</script>
+    </script>
 </body>
+
 </html>

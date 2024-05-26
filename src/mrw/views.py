@@ -8,8 +8,11 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
 
-from .forms import InputForm
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from .forms import InputForm, PromptForm
 from .services import parse_chat
+from .models import Prompt
 
 
 def camelcase2snakecase(s: str) -> str:
@@ -19,8 +22,15 @@ def camelcase2snakecase(s: str) -> str:
 
 class ParseChatView(View):
     def get(self, request):
-        form = InputForm()
-        return render(request, "mrw/parse_chat.html", {"form": form})
+        return render(
+            request,
+            "mrw/parse_chat.html",
+            {
+                "prompt_form": PromptForm(),
+                "prompts": Prompt.objects.all().order_by("-created_at"),
+                "form": InputForm(),
+            },
+        )
 
     def post(self, request):
         form = InputForm(request.POST)
@@ -70,3 +80,27 @@ class WriteChangesView(View):
                 "status": f"Selected elements written successfully to {os.path.join(root_folder, app_name)}"
             }
         )
+
+
+def save_prompt(request):
+    if request.method == "POST":
+        form = PromptForm(request.POST)
+        if form.is_valid():
+            prompt = form.save()
+            return JsonResponse(
+                {
+                    "id": prompt.id,
+                    "name": prompt.name,
+                    "prompt": prompt.prompt,
+                }
+            )
+    return JsonResponse({"error": "Invalid form"}, status=400)
+
+
+def delete_prompt(request):
+    if request.method == "POST":
+        pk = request.POST.get("id")
+        prompt = Prompt.objects.get(pk=pk)
+        prompt.delete()
+        return JsonResponse({"status": "deleted"})
+    return JsonResponse({"error": "Invalid request"}, status=400)
