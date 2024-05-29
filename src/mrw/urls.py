@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import ParseChatView, WriteChangesView, save_prompt, delete_prompt
+from .views import ParseChatView, WriteChangesView, save_prompt, delete_prompt, clean_up
 
 app_name = "mrw"
 
@@ -9,4 +9,5 @@ urlpatterns = [
     path("write-changes/", WriteChangesView.as_view(), name="write_changes"),
     path('save_prompt/', save_prompt, name='save_prompt'),
     path('delete_prompt', delete_prompt, name='delete_prompt'),    
+    path('clean_up/', clean_up, name='clean_up'),
 ]

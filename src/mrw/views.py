@@ -3,6 +3,9 @@ import os
 import shutil
 import time
 from urllib.parse import unquote
+from django.http import JsonResponse
+import os
+import glob
 
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -104,3 +107,26 @@ def delete_prompt(request):
         prompt.delete()
         return JsonResponse({"status": "deleted"})
     return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+def clean_up(request):
+    app_name = camelcase2snakecase(request.POST.get('app_name'))
+    root_folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if root_folder := request.POST.get("root_folder"):
+        root_folder = os.path.join(root_folder, app_name)
+    
+    if not app_name or not root_folder:
+        return JsonResponse({'status': 'error', 'message': 'App name and root folder are required.'}, status=400)
+
+    directory = os.path.join(root_folder, app_name)
+    
+    if not os.path.exists(directory):
+        return JsonResponse({'status': 'error', 'message': 'Directory does not exist.'}, status=400)
+    
+    try:
+        bak_files = glob.glob(os.path.join(directory, '*.bak'))
+        for file in bak_files:
+            os.remove(file)
+        return JsonResponse({'status': 'Clean up successful. Removed {} files.'.format(len(bak_files))})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

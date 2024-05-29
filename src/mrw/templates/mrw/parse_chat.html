@@ -288,6 +288,7 @@
             <div class="buttons-container">
                 <span id="parseChatBtn" class="me-4"><i class="fas fa-code mx-2"></i> Parse Chat</span>
                 <span id="writeChangesBtn" class="disabled"><i class="fas fa-save mx-2"></i> Write selected elements to disk</span>
+                <span id="cleanUpBtn" class="me-4"><i class="fas fa-broom mx-2"></i> Clean up</span>
                 <span id="helpBtn" class="me-4 enabled"><i class="fas fa-question-circle mx-2"></i> Help</span>
             </div>
             <div class="right-icons">
@@ -437,6 +438,7 @@
 
             var parseChatBtn = document.getElementById("parseChatBtn");
             var writeChangesBtn = document.getElementById("writeChangesBtn");
+            var cleanUpBtn = document.getElementById("cleanUpBtn");
             var helpBtn = document.getElementById("helpBtn");
             var togglePromptsBtn = document.getElementById("togglePromptsBtn");
             var closePromptsBtn = document.getElementById("closePromptsBtn");
@@ -522,6 +524,27 @@
                 });
 
                 fetch("{% url 'mrw:write_changes' %}", {
+                    method: 'POST',
+                    body: formData,
+                }).then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text) });
+                    }
+                    return response.json();
+                }).then(data => {
+                    showToast(data.status, "success");
+                }).catch(error => {
+                    console.error('Error:', error);
+                    showToast(error.message, "danger");
+                });
+            };
+
+            cleanUpBtn.onclick = function () {
+                var formData = new FormData(document.getElementById("inputForm"));
+                formData.append('app_name', appNameInput.value);
+                formData.append('root_folder', rootFolderInput.value);
+
+                fetch("{% url 'mrw:clean_up' %}", {
                     method: 'POST',
                     body: formData,
                 }).then(response => {
