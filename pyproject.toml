@@ -31,7 +31,48 @@ classifiers = [
 ]
 
 dependencies = [
-  
+  'bs4',
+  "python-dotenv",
+  "requests",
+  "django",
+  "django-click", 
+  "django-debug-toolbar", 
+  "django-extensions ", 
+  "django-crispy-forms", 
+  "crispy-bootstrap5", 
+  "cookiecutter", 
+  "pillow", 
+  "django-taggit", 
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "mypy",
+  "hatch",
+  "black",
+  "isort",
+  "coverage",
+  "pytest-cov",
+  "types-beautifulsoup4",
+  "types-jsonschema",
+  "mkdocs-material",
+  "mkdocstrings-python",
+  "mkautodoc",
+  "mkdocs-coverage",
+  "tox",
+  "pre-commit",
+  "black",
+  "flake8",
+  "flake8-isort",
+  "pylint-django",
+  "pip-tools",
+  "locust",
+  "djlint",
+  "ipython",
+  "ipdb",
+  "autoflake",
+  "ruff"
 ]
 
 [project.urls]
