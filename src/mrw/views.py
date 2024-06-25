@@ -1,21 +1,24 @@
-import re
+import glob
 import os
+import re
 import shutil
 import time
 from urllib.parse import unquote
-from django.http import JsonResponse
-import os
-import glob
 
+from django.conf import settings
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views import View
 
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
 from .forms import InputForm, PromptForm
-from .services import parse_chat
 from .models import Prompt
+from .services import parse_chat
+
+SCRATCHPAD_WORKFOLDER = (
+    hasattr(settings, "SCRATCHPAD_WORKFOLDER")
+    and settings.SCRATCHPAD_WORKFOLDER
+    or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+)
 
 
 def camelcase2snakecase(s: str) -> str:
@@ -39,10 +42,7 @@ class ParseChatView(View):
         form = InputForm(request.POST)
         if form.is_valid():
             app_name = camelcase2snakecase(form.cleaned_data["app_name"])
-            root_folder = form.cleaned_data.get(
-                "root_folder",
-                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            )
+            root_folder = form.cleaned_data.get("root_folder", SCRATCHPAD_WORKFOLDER)
             content = request.POST.get("editor_content", "")
             content = unquote(content)  # Decode the content
             parsed_data = parse_chat(content, app_name, root_folder)
@@ -56,9 +56,7 @@ class WriteChangesView(View):
         if not app_name:
             return JsonResponse({"status": f"Missing app-name"})
 
-        root_folder = request.POST.get(
-            "root_folder", os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        )
+        root_folder = request.POST.get("root_folder", "") or SCRATCHPAD_WORKFOLDER
         selected_code_blocks = request.POST.getlist("code_blocks")
         content = request.POST.get("editor_content", "")
         content = request.POST.get("editor_content", "")
@@ -69,9 +67,7 @@ class WriteChangesView(View):
             if not any([f in file_path for f in selected_code_blocks]):
                 continue
 
-            file_path = file_path.replace("\\", os.sep).replace("/", os.sep)
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
-
             if os.path.exists(file_path):
                 shutil.move(file_path, file_path + f"_{int(time.time())}.bak")
 
@@ -110,23 +106,30 @@ def delete_prompt(request):
 
 
 def clean_up(request):
-    app_name = camelcase2snakecase(request.POST.get('app_name'))
-    root_folder = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    app_name = camelcase2snakecase(request.POST.get("app_name"))
+    root_folder = SCRATCHPAD_WORKFOLDER
     if root_folder := request.POST.get("root_folder"):
         root_folder = os.path.join(root_folder, app_name)
-    
+
     if not app_name or not root_folder:
-        return JsonResponse({'status': 'error', 'message': 'App name and root folder are required.'}, status=400)
+        return JsonResponse(
+            {"status": "error", "message": "App name and root folder are required."},
+            status=400,
+        )
 
     directory = os.path.join(root_folder, app_name)
-    
+
     if not os.path.exists(directory):
-        return JsonResponse({'status': 'error', 'message': 'Directory does not exist.'}, status=400)
-    
+        return JsonResponse(
+            {"status": "error", "message": "Directory does not exist."}, status=400
+        )
+
     try:
-        bak_files = glob.glob(os.path.join(directory, '*.bak'))
+        bak_files = glob.glob(os.path.join(directory, "*.bak"))
         for file in bak_files:
             os.remove(file)
-        return JsonResponse({'status': 'Clean up successful. Removed {} files.'.format(len(bak_files))})
+        return JsonResponse(
+            {"status": "Clean up successful. Removed {} files.".format(len(bak_files))}
+        )
     except Exception as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
